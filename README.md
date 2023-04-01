@@ -3,5 +3,7 @@ it's written in JavaScript
 Without ORM
 
 express.js used for back end application
+
 React used for front end application
+
 Material Mui used for components and style of web application.
