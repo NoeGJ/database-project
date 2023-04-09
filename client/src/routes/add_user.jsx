@@ -108,8 +108,7 @@ const Add_user = () => {
       setFormStudentValidation( { [name]: value > 0 } );
       else
       setFormStudentValidation( { [name] : value.length > 0 } )
-    
-        
+  
     }
 
     const handleBlurFormStatus = (e) => {
@@ -163,7 +162,6 @@ const Add_user = () => {
         else{
           alert( 'Faltan campos por llenar' );
         }
-
       };
 
       const handleCloseSuccess = (event, reason) => {
