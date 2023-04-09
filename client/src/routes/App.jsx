@@ -1,15 +1,18 @@
  import './App.css';
+ import  '../career-List'
 
-import { Paper, TableContainer,Table, TableHead, TableCell, TableRow, Button, TablePagination, TableBody, IconButton } from '@mui/material';
-import DeleteIcon from "@mui/icons-material/Delete"
-import EditIcon from "@mui/icons-material/Edit"
-import ArrowUpIcon from "@mui/icons-material/KeyboardArrowUp"
+import { Paper, TableContainer,Table, TableHead, TableCell, TableRow, Button, TablePagination, TableBody, Snackbar, Alert, Input, TextField, FormControl, FilledInput, Icon, InputBase, Typography, Collapse, Select, MenuItem, Box, InputLabel } from '@mui/material';
+import DeleteIcon from "@mui/icons-material/Delete";
+import EditIcon from "@mui/icons-material/Edit";
+import SearchIcon from '@mui/icons-material/Search';
+import TuneIcon from '@mui/icons-material/Tune';
 
 import { Link } from 'react-router-dom';
+
 import { useEffect, useState } from 'react';
+import carreras from '../career-List';
 
 const columns = [
-  { id: 'view', label: '' },
   {id: 'code', label: 'Codigo'},
   {id: 'name', label: 'Nombre' },
   {id: 'career', label: 'Carrera'},
@@ -18,16 +21,18 @@ const columns = [
   {id: 'actions', label: '', align: 'center',},
 ];
 
-const createData = (code, name, career, admission, graduated) => {
-  return { code, name, career, admission, graduated };
+const createData = (codigo, nombre, carrera, ciclo_ingreso, titulado) => {
+  return { codigo, nombre, carrera, ciclo_ingreso, titulado };
 };
 
 
 let stundentData = []
+let result = []
 
 const App = () => {
   
   //Hooks
+  const [search, setSearch] = useState('');
 
   const[page, setPage] = useState(0);
   const[rowsPerPage, setRowsPerPage] = useState(10);
@@ -35,11 +40,110 @@ const App = () => {
   const [data, setData] = useState([]);
   const[student,setStudent] = useState([]);
 
+  const[success, setSuccess] = useState(false);
+  const[error, setError] = useState(false);
+
+  const [filterState, setFilterState] = useState(false);
+  const [sexo, setSexo] = useState('Any');
+  const [titulado, setTitulado] = useState('Any');
+  const [carrera, setCarrera] = useState('Any');
+
   //Events
 
   const handleChangeRowsPerPage = (event) => {
       setRowsPerPage(+event.target.value);
       setPage(0);
+  };
+
+  const handleCloseSuccess = (event, reason) => {
+    if( reason === 'clickaway' )
+      return;
+      setSuccess(false);
+};
+
+const handleCloseError = (event, reason) => {
+    if( reason === 'clickaway' )
+      return;
+      setError(false);
+};
+
+const handleSearchInput = (e) => {
+  setSearch(e.target.value)
+  buscar(e.target.value)
+  
+};
+
+const handleFilterBtn = () => {
+  filterState === true?  setFilterState(false) : setFilterState(true);
+  
+}
+
+const handleCarreraSelect = (e) => {
+  setCarrera(e.target.value)
+  
+  buscar(e.target.value)
+}
+
+const handleSexoSelect = (e) => {
+  setSexo(e.target.value);
+  
+  buscar(e.target.value);
+};
+
+const handleTituladoSelect = (e) => {
+  setTitulado(e.target.value);
+
+  buscar(e.target.value);
+};
+
+const buscar = (value) => {
+    
+    if(value === 'Any')
+      value = ''
+
+    
+
+    result = data.filter( (element) => {
+    if(value === 'F'){
+      return element.sexo === 'F';
+    }
+    else if(value === 'H'){
+      return element.sexo === 'H';
+    }
+    else if (value === 'SI') {
+      return element.titulado;
+    }else if(value === 'NO'){
+      return !element.titulado;
+    }
+
+      else if(element.carrera.includes(value)){
+        return element;
+        
+    } else if(element.nombre.toString().toLowerCase().includes(value.toLowerCase())){
+      return element;
+    }
+  });
+
+  setStudent(result);
+}
+
+
+  const handleDelete = async (event, codeId) => {
+    console.log( codeId );
+    const res = await fetch('http://localhost:9000/deleteStudent',{
+      method: 'delete',
+      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', },
+      mode: 'cors',
+      body: JSON.stringify( {id: codeId} ),
+    })
+
+    if(res.ok){
+       
+      setSuccess(true);
+   }
+    else{
+      setError(true);
+    }
   };
 
   const fetchGet = () => {
@@ -50,6 +154,7 @@ const App = () => {
    stundentData = dataJson.map(obj =>  createData( obj.codigo, obj.nombre, obj.carrera, obj.ciclo_ingreso, obj.titulado ) );
    setStudent(stundentData);
    setData( dataJson );
+   result = stundentData
 
  }  ) 
  .catch( (error) => console.log( error ) );
@@ -60,74 +165,142 @@ const App = () => {
     fetchGet()
   },[])
   
+  const filters = (
+    <div >
+      <Box sx={ { mb: 2 } }>
+      <FormControl sx={{ mt: 1 }}>
+        <InputLabel sx={{ color: 'white',  }}  >Titulado</InputLabel>
+          <Select
+          required
+          size='small'
+          sx={{mt:1, ml: 1, minWidth: 110, width: "50%", backgroundColor: '#ffffff' }}
+          
+          value={ titulado }
+          onChange={ handleTituladoSelect }
+          defaultValue={'Any'}
+          >
+          <MenuItem value={"Any"}>Any</MenuItem>
+          <MenuItem value={'SI'}>Si</MenuItem>
+          <MenuItem value={'NO'}>No</MenuItem>
+          </Select>
+          </FormControl>
+
+        <FormControl sx={{ mt: 1 }}>
+        <InputLabel sx={{ color: 'white',  }}  >Carrera</InputLabel>
+          <Select
+          required
+          size='small'
+          sx={{mt:1, ml: 1, minWidth: 110, width: "50%", backgroundColor: '#ffffff' }}
+          
+          value={carrera}
+          onChange={ handleCarreraSelect }
+          defaultValue={'Any'}
+          >
+            
+          <MenuItem key={0}  value='Any'>Any</MenuItem>
+          {carreras.map( element => (
+            <MenuItem key={ element.key } value={ element.value } >{element.value}  </MenuItem>
+          ))}
+          </Select>
+          </FormControl>
+
+        <FormControl sx={{ mt: 1 }}>
+        <InputLabel sx={{ color: 'white',  }}  >Sexo</InputLabel>
+          <Select
+          required
+          size='small'
+          sx={{mt:1, ml: 1, minWidth: 110, width: "50%", backgroundColor: '#ffffff' }}
+          
+          value={sexo}
+          onChange={ handleSexoSelect }
+          defaultValue={'Any'}
+          >
+            
+          <MenuItem value='Any'>Any</MenuItem>
+          <MenuItem value="F">Mujer</MenuItem>
+          <MenuItem value="H">Hombre</MenuItem>
+          </Select>
+          </FormControl>
+          </Box>
+    </div>
+  );
+
+
+
   return (
     <header className='App-header'>
 
     <div className='Menu'>
-      <Button variant='outlined' size='medium' className='btnTable' component={Link} to={"new"}>+ ADD</Button>
+      <Button variant='contained' size='medium'  component={Link} to={"new"}>+ ADD</Button>
+      <Paper component='form'  sx={{ alignItems: 'center', display: 'flex', borderRadius: 1, ml: 30,  p: '6px 12px', backgroundColor: '#ffffff', width: '50%' }} elevation={5}>
+      <SearchIcon sx={{ color: 'black' }}/>
+      <InputBase   sx={{ ml: 5,   flex: 1, width: '22%' }} placeholder='Busqueda por nombre' onChange={ handleSearchInput } value={search}></InputBase>
+      </Paper >
+      <FormControl ><Button variant='contained' size='medium' sx={{ position: 'relative', p: '10px 12px' }} startIcon={ <TuneIcon/> } onClick={ handleFilterBtn } type='checkbox'  > Filter </Button> </FormControl>
+
+
     </div>
+    <div >
+          <Collapse in={filterState} unmountOnExit  >{filters}</Collapse>
+      </div>
     <div className="App">
 
 
       <Paper sx={ {width: '100%'}} elevation={ 3 }>
       <TableContainer component={Paper}>
         <Table sx={{minWidth: 650 }} >
-          <TableHead>
+          <TableHead sx={{ backgroundColor: '#09070a'  }} >
             <TableRow>
               {columns.map( columns => (
                 <TableCell
                   key={columns.id}
                   align={ columns.align }
+                  sx={ { color: '#ffffff', fontSize: 16 } }
                 >
                   {columns.label}
                   </TableCell>
               ))}
             </TableRow>
           </TableHead>
-          <TableBody>
-          { 
-          //const[open, setOpen] = useState(false) 
           
-          student.map( (row) => (
-
+          <TableBody>
+          
+          { 
+            
+          student.slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
+          .map( (row) => (
              
+            <TableRow hover key={row.codigo} >
 
-            <TableRow hover key={row.code} >
-                <TableCell>
-                  <IconButton
-                  size='small'
-                  
-                  >
-                    { <ArrowUpIcon/> }
-                  </IconButton>
-                </TableCell>
                 <TableCell  >
-                  {row.code}
+                  {row.codigo}
                 </TableCell>
                 <TableCell>
-                  {row.name}
+                  {row.nombre}
                 </TableCell>
                 <TableCell>
-                  {row.career}
+                  {row.carrera}
                 </TableCell>
                 <TableCell>
-                  {row.admission}
+                  {row.ciclo_ingreso}
                 </TableCell>
                 <TableCell>
-                  { row.graduated ? "SI" : "NO" }
+                  { row.titulado ? "SI" : "NO" }
                 </TableCell>
                 <TableCell>
-                  <Button variant='contained' size='small' startIcon={<EditIcon />} sx= { { mr: 0.5 } } > Edit </Button>
-                  <Button variant='contained' size='small' startIcon={<DeleteIcon/>} sx= { { mr: 0.5 } } >Delete</Button>
+                  <Button variant='contained' size='small' sx= { { mr: 0.5 } } >View</Button>
+                  <Button variant='contained' size='small' startIcon={<EditIcon />} sx= { { mr: 0.5 } } component={Link} to={`edit/${row.codigo}`} > Edit </Button>
+                  <Button variant='contained' size='small' type='button' startIcon={<DeleteIcon/>} sx= { { mr: 0.5  } } onClick={ (event) => handleDelete(event, row.codigo)} >Delete</Button>
                 </TableCell>
             </TableRow>
-          ))}
+          ))
+          }
           </TableBody>
         </Table>
       </TableContainer>
       <TablePagination
-        
-        rowsPerPageOptions={[10, 50, 100]}
+        sx={ { mb: 5 } }
+        rowsPerPageOptions={[10, 25, 50]}
         component="div"
         count={student.length}
         rowsPerPage={rowsPerPage}
@@ -136,6 +309,20 @@ const App = () => {
         onRowsPerPageChange= { handleChangeRowsPerPage }      
       >
       </TablePagination>
+
+      <Snackbar open={success} autoHideDuration={10000} onClose={handleCloseSuccess} >
+        <Alert onClose={handleCloseSuccess} severity="success" sx={ { width: "100%" } }>
+          Se a eliminado un elemento exitosamente 
+        </Alert>
+    </Snackbar>
+    
+    <Snackbar open={error} autoHideDuration={10000} onClose={handleCloseError} >
+        <Alert onClose={handleCloseError} severity="error" sx={ { width: "100%" } }>
+          Ha habido un error al eliminar un elemento
+        </Alert>
+    </Snackbar>
+
+
       </Paper>
     </div>
     </header>
