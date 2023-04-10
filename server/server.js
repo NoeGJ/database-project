@@ -15,21 +15,12 @@ app.get('/modalidad', query.getNombreModalidades);
 app.get('/students', query.getStudents);
 
 
+app.post('/getStudent', query.getStudent);
 app.post('/createStudent', query.createStudent);
+
+app.put('/updateStudent', query.updateStudent);
+
 app.delete( '/deleteStudent', query.deleteStudent );
-
-// app.get('/API', (req, res) => {
-//     db.any('SELECT codigo,nombre,carrera FROM ALUMNO WHERE edad = "sada"')
-//     .then( (data) => {
-//         console.log(data);
-//         //res.send(data);
-//         res.send("Holaa");
-//     } )
-//     .catch( (error) => {
-//         console.log(error);
-//     } )
-// });
-
 
 
 app.listen(port, () => {
