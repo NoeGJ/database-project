@@ -53,7 +53,7 @@ const initialStatusValidation = {
   puntaje: false,
 };
 
-const Add_user = () => {
+const AddUser = () => {
     
     //Hooks
     const navigate = useNavigate();
@@ -468,4 +468,4 @@ const Add_user = () => {
 );
 }
 
-export default Add_user;
+export default AddUser;

@@ -30,13 +30,13 @@ const createData = (codigo, nombre, carrera, ciclo_ingreso, titulado) => {
 };
 
 
-let stundentData = []
+
 let modList = [];
 let result = []
 
 const App = () => {
   
-  let studentArray = [];
+  
 
   //Hooks
   const [search, setSearch] = useState('');
@@ -139,20 +139,35 @@ const buscar = (value) => {
 
   const handleDelete = async (event, codeId) => {
     console.log( codeId );
-    const res = await fetch('http://localhost:9000/deleteStudent',{
-      method: 'delete',
-      headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', },
-      mode: 'cors',
-      body: JSON.stringify( {id: codeId} ),
-    })
+     const res = await fetch('http://localhost:9000/deleteStudent',{
+       method: 'delete',
+       headers: { 'Content-Type': 'application/json', 'Accept': 'application/json', },
+       mode: 'cors',
+       body: JSON.stringify( {id: codeId} ),
+     })
 
-    if(res.ok){
-       
-      setSuccess(true);
-   }
-    else{
-      setError(true);
+     if(res.ok){
+      refreshList(codeId)
+       setSuccess(true);
     }
+     else{
+       setError(true);
+     }
+    
+  };
+
+  const refreshList = (id) => {
+      let newData = data.filter( element => 
+          element.codigo !== id
+      );
+
+      let newStudentList = student.filter( element => 
+        element.codigo !== id 
+      );
+
+      setData( newData );
+      setStudent( newStudentList );
+      console.log( newData );
   };
 
   const handleOpenView = (codigo) => {
@@ -161,7 +176,7 @@ const buscar = (value) => {
   }
 
   const filterStudent = (codigo) => {
-    studentArray = data.filter( (element) => {
+    let studentArray = data.filter( (element) => {
       if(element.codigo === codigo){
           return element;
       }
@@ -178,7 +193,8 @@ const buscar = (value) => {
  .then( (res) =>  res.json() )
  .then( ( dataJson ) => {
 
-   stundentData = dataJson.map(obj =>  createData( obj.codigo, obj.nombre, obj.carrera, obj.ciclo_ingreso, obj.titulado ) );
+    let stundentData = [];
+    stundentData = dataJson.map(obj =>  createData( obj.codigo, obj.nombre, obj.carrera, obj.ciclo_ingreso, obj.titulado ) );
    setStudent(stundentData);
    setData( dataJson );
    result = stundentData
