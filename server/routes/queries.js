@@ -20,7 +20,6 @@ const getNombreModalidades = (req, res) => {
     .catch( (error) => {
         res.send(error);
     })
-
 };
 
 const createStudent = (req, res) => {
@@ -81,7 +80,34 @@ const updateStudent = ( req, res ) => {
 
 
 const getStudents = (req, res) => {
-    db.any('SELECT * FROM alumno JOIN estatus on id_estatus = id_estatus1;')
+    let querySelect = 'SELECT * FROM alumno JOIN estatus on id_estatus = id_estatus1';
+    const { nombre, sexo, titulado, carrera} = req.query;
+    console.log( req.query );
+
+    let paramsCount = Object.keys(req.query).length;
+    console.log(paramsCount);
+      if(paramsCount != 0){
+         querySelect += " WHERE ";
+      }
+
+     for( key in req.query ){
+        querySelect += key;
+         if(key === "nombre"){
+            querySelect +=  ` LIKE '%${req.query[key]}%'`;
+         }else if(key === "titulado"){
+            let value = req.query[key] === 'SI'? true: false;
+            querySelect += ` = ${value}`;
+         }else{
+            querySelect += ` = '${req.query[key]}'`;
+         }
+
+         if(paramsCount > 1){
+            querySelect += ' AND ';
+         }
+         paramsCount--;        
+     }
+    
+    db.any( querySelect )
     .then( (data) => {
         res.send(data);
     } )
