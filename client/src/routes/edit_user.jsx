@@ -1,7 +1,7 @@
 import './add_user.css';
 import carreras from '../career-List';
 
-import { useEffect, useState, useReducer } from 'react';
+import { useEffect, useState, useReducer, useCallback } from 'react';
 import { Box, TextField, FormControl, Select, MenuItem, InputLabel, Paper, Button, Checkbox, FormControlLabel, Collapse, Divider, Typography, Snackbar, Alert } from '@mui/material';
 import { LocalizationProvider, DateField } from '@mui/x-date-pickers';
 import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs'
@@ -215,12 +215,12 @@ const EditUser = () => {
       };
 
       
-      const fetchMod = async () => {
+      const fetchMod = useCallback(async () => {
         modList = await (await fetch('http://localhost:9000/modalidad')).json();
         console.log(modList);
-      };
+      },[]);
 
-      const fetchElements = async  () => {
+      const fetchElements = useCallback(async  () => {
         
           data = await (await fetch('http://localhost:9000/getStudent',{
           method: 'POST',
@@ -260,12 +260,12 @@ const EditUser = () => {
               } );  
            }
         
-      };
+      },[codigoId, formStatusValidation]);
 
       useEffect( () => {
-        fetchMod();
-        fetchElements();         
-      },[]);
+        fetchElements();      
+        fetchMod();   
+      },[fetchElements, fetchMod]);
 
       const status = (        
         <div>

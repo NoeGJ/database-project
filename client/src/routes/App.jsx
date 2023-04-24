@@ -11,7 +11,9 @@ import 'dayjs/locale/es-mx'
 
 import { Link } from 'react-router-dom';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import queryString from 'query-string';
+
 import carreras from '../career-List';
 import  dayjs from 'dayjs';
 dayjs.locale('es-mx')
@@ -29,15 +31,10 @@ const createData = (codigo, nombre, carrera, ciclo_ingreso, titulado) => {
   return { codigo, nombre, carrera, ciclo_ingreso, titulado };
 };
 
-
-
 let modList = [];
-let result = []
 
 const App = () => {
   
-  
-
   //Hooks
   const [search, setSearch] = useState('');
 
@@ -77,9 +74,7 @@ const handleCloseError = (event, reason) => {
 };
 
 const handleSearchInput = (e) => {
-  setSearch(e.target.value)
-  buscar(e.target.value)
-  
+  setSearch(e.target.value)  
 };
 
 const handleFilterBtn = () => {
@@ -90,52 +85,17 @@ const handleFilterBtn = () => {
 const handleCarreraSelect = (e) => {
   setCarrera(e.target.value)
   
-  buscar(e.target.value)
 }
 
 const handleSexoSelect = (e) => {
   setSexo(e.target.value);
   
-  buscar(e.target.value);
 };
 
 const handleTituladoSelect = (e) => {
   setTitulado(e.target.value);
 
-  buscar(e.target.value);
 };
-
-const buscar = (value) => {
-    
-    if(value === 'Any')
-      value = ''
-
-    
-
-    result = data.filter( (element) => {
-    if(value === 'F'){
-      return element.sexo === 'F';
-    }
-    else if(value === 'H'){
-      return element.sexo === 'H';
-    }
-    else if (value === 'SI') {
-      return element.titulado;
-    }else if(value === 'NO'){
-      return !element.titulado;
-    }
-
-      else if(element.carrera.includes(value)){
-        return element;
-        
-    } else if(element.nombre.toString().toLowerCase().includes(value.toLowerCase())){
-      return element;
-    }
-  });
-
-  setStudent(result);
-}
-
 
   const handleDelete = async (event, codeId) => {
     console.log( codeId );
@@ -178,8 +138,9 @@ const buscar = (value) => {
   const filterStudent = (codigo) => {
     let studentArray = data.filter( (element) => {
       if(element.codigo === codigo){
-          return element;
+          return true;
       }
+      return false;
   } );
 
   console.log( studentArray );
@@ -188,33 +149,54 @@ const buscar = (value) => {
   console.log( studentList );
   }
 
-  const fetchGet = () => {
-    fetch('http://localhost:9000/students') 
+  const fetchGet = useCallback(async () => {
+
+    await fetch('http://localhost:9000/students?' + queryString.stringify( 
+      {"sexo": sexo === 'Any'? null : sexo ,
+      "titulado" : titulado === 'Any'? null : titulado,
+      "carrera": carrera === 'Any'?  null : carrera,
+      "nombre": search === ''? null : search }, { skipNull: true })) 
  .then( (res) =>  res.json() )
  .then( ( dataJson ) => {
 
     let stundentData = [];
     stundentData = dataJson.map(obj =>  createData( obj.codigo, obj.nombre, obj.carrera, obj.ciclo_ingreso, obj.titulado ) );
-   setStudent(stundentData);
+   setStudent(stundentData);  
    setData( dataJson );
-   result = stundentData
-
+  console.log(dataJson);
  }  ) 
  .catch( (error) => console.log( error ) );
 
-};
+}, [carrera, search, sexo, titulado] );
 
-const fetchMod = async () => {
+const fetchMod = useCallback(async () => {
    modList = await fetch('http://localhost:9000/modalidad')
   .then( res =>  res.json() )
   .catch( error => console.log(error) );
   modList.map( (e, index) => e.id = (index + 1)  )
-};
+}, []);
 
   useEffect(  () => {
     fetchGet();
     fetchMod();
-  },[])
+  },[fetchGet, fetchMod]);
+
+  useEffect(() => {
+    fetchGet();
+  }, [search,fetchGet]);
+  
+  useEffect(() => {
+    fetchGet(carrera);
+  }, [carrera,fetchGet]);
+  
+  useEffect(() => {
+    fetchGet(sexo);
+  }, [sexo,fetchGet]);
+  
+  useEffect(() => {
+    fetchGet(titulado);
+  }, [titulado,fetchGet]);
+  
   
   const filters = (
     <div >
@@ -314,7 +296,7 @@ const fetchMod = async () => {
           <ListItemText  primary='Carrera' secondary= { carreras.map( (element) => {
             if(e.carrera.substring(0,4).includes(element.value)){ 
               return `${element.name} (${element.value})`; 
-            }}
+            } return false; }
              )}/>
           <ListItemText primary='Ciclo escolar' secondary= { `${ e.ciclo_ingreso } -  ${ e.ciclo_egreso == null ? '?' : e.ciclo_egreso } ` } />
         </ListItem>
@@ -324,7 +306,7 @@ const fetchMod = async () => {
         </ListItem>
 
         <ListItem>
-        <ListItemText primary='Modalidad de titulacion' secondary={  e.id_mod1 == null ? 'No disponible' : modList.map( element => {  if(element.id === e.id_mod1) { return `${element.nombre}` } }  ) } />
+        <ListItemText primary='Modalidad de titulacion' secondary={  e.id_mod1 == null ? 'No disponible' : modList.map( element => {  if(element.id === e.id_mod1) { return `${element.nombre}` } return false; }  ) } />
         <ListItemText primary='Obtenido' secondary={ e.titulado ? e.calificacion : 'No disponible' } />
           <ListItemText />
         </ListItem>
