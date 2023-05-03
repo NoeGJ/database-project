@@ -189,7 +189,7 @@ const AddUser = () => {
         
         let bodyPost = [
           ('estatus', {"graduated": checked, "startDate":   startDate, "endDate":  endDate, "average": puntaje, "type": modalidad }),
-          ('student', {"name": nombre, "folio": folio, "age": edad, "genre": sexo, "code": codigo, "career": career, "egreso":  egresoDate, "ingreso": IngresoDate })
+          ('student', {"name": nombre, "folio": folio, "age": edad, "gender": sexo, "code": codigo, "career": career, "egreso":  egresoDate, "ingreso": IngresoDate })
         ];
           //console.log( bodyPost );
           const res = await  fetch('http://localhost:9000/createStudent', {
