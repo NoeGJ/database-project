@@ -3,11 +3,11 @@ const express = require('express');
 const pgp = require('pg-promise')();
 
 const connection = {
-    host: 'localhost',
-    port: 5432,
-    database: 'titulacion',
-    user: 'postgres',
-    password: 'pass',
+    host: /*Host*/,
+    port: /*Port*/,
+    database: /*DBName*/,
+    user: /*UserName*/,
+    password: /*Password*/,
 };
 const db = pgp(connection);
 
