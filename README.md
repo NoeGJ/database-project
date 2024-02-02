@@ -6,4 +6,4 @@ express.js used for back end application
 
 React used for front end application
 
-Material Mui used for components and style of web application.
+Material UI used for components and style of web application.
