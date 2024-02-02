@@ -2,8 +2,8 @@ This repository have been created for class called "Seminario de solucion de bas
 it's written in JavaScript
 Without ORM
 
-express.js used for back end application
+express.js is used in back-end
 
-React used for front end application
+React is used in front-end
 
-Material UI used for components and style of web application.
+Material UI is used in components and style
