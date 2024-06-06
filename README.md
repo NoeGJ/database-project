@@ -1,11 +1,6 @@
-This repository has been created for a class called "Seminario de solucion de bases de datos".
-
-it's written in JavaScript
+Repositorio para la clase "Seminario de solucion de bases de datos".
 
 Technologies
-
 express.js
-
 ReactJS
-
 Material UI 
